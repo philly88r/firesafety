@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fire Safety — Client Review Tool</title>
+    <title>The Flame Group — Client Review Tool</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; height: 100vh; }
         
-        /* Overlay that captures clicks on the iframe */
         #click-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -17,13 +16,12 @@
             cursor: crosshair;
             pointer-events: auto;
         }
-        #click-overlay.inactive { pointer-events: none; }
+        #click-overlay.inactive { pointer-events: none; cursor: default; }
         
-        /* Pin markers */
         .pin {
             position: absolute;
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50% 50% 50% 0;
             transform: rotate(-45deg) translate(-50%, -50%);
             transform-origin: 0 0;
@@ -32,17 +30,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
             transition: transform 0.15s ease;
             animation: pinDrop 0.3s ease;
         }
-        .pin:hover { transform: rotate(-45deg) translate(-50%, -50%) scale(1.15); }
+        .pin:hover { transform: rotate(-45deg) translate(-50%, -50%) scale(1.15); z-index: 25; }
         .pin-like { background: #22c55e; }
         .pin-dislike { background: #ef4444; }
         .pin-neutral { background: #f59e0b; }
         .pin .pin-num {
             transform: rotate(45deg);
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             color: white;
         }
@@ -51,15 +49,13 @@
             100% { opacity: 1; transform: rotate(-45deg) translate(-50%, -50%) scale(1); }
         }
         
-        /* Comment popup */
         .comment-popup {
-            position: absolute;
-            z-index: 30;
+            position: fixed;
+            z-index: 100;
             background: white;
             border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             width: 340px;
-            padding: 0;
             animation: popIn 0.2s ease;
             overflow: hidden;
         }
@@ -68,81 +64,77 @@
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
         
-        /* Sidebar */
         .sidebar-item {
             transition: all 0.15s ease;
             border-left: 3px solid transparent;
         }
-        .sidebar-item:hover { background: #f1f5f9; }
-        .sidebar-item.active { background: #f0fdf4; border-left-color: #22c55e; }
+        .sidebar-item:hover { background: #fff7ed; }
+        .sidebar-item.active { background: #fff7ed; border-left-color: #ea580c; }
         .sidebar-item:hover .delete-btn { opacity: 1; }
         .delete-btn { opacity: 0; transition: opacity 0.15s; }
         
-        /* Toggle switch */
         .toggle-btn {
-            padding: 8px 16px;
+            padding: 8px 12px;
             border-radius: 8px;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.15s ease;
             border: 2px solid transparent;
+            text-align: center;
         }
         .toggle-btn.selected { transform: scale(1.05); }
         .toggle-like.selected { background: #dcfce7; color: #16a34a; border-color: #22c55e; }
         .toggle-dislike.selected { background: #fef2f2; color: #dc2626; border-color: #ef4444; }
         .toggle-neutral.selected { background: #fffbeb; color: #d97706; border-color: #f59e0b; }
-        
-        /* Status bar */
-        .status-bar {
+
+        /* Tooltip on hover */
+        #hover-label {
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 48px;
-            background: white;
-            border-top: 1px solid #e5e7eb;
-            z-index: 50;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            gap: 16px;
+            z-index: 15;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 6px;
+            pointer-events: none;
+            display: none;
+            white-space: nowrap;
         }
     </style>
 </head>
 <body class="bg-gray-100">
     <div id="app" class="flex h-screen">
         <!-- Sidebar -->
-        <div class="w-[360px] bg-white border-r border-gray-200 flex flex-col h-full shrink-0">
+        <div class="w-[350px] bg-white border-r border-gray-200 flex flex-col h-full shrink-0">
             <!-- Header -->
-            <div class="p-5 border-b border-gray-100">
+            <div class="p-5 border-b border-orange-50">
                 <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+                    <div class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center shadow-sm">
+                        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
                     </div>
                     <div>
-                        <h1 class="font-bold text-gray-900 text-lg leading-tight">Fire Safety</h1>
-                        <p class="text-xs text-gray-500">Client Review Tool</p>
+                        <h1 class="font-bold text-gray-900 leading-tight">The Flame Group</h1>
+                        <p class="text-[11px] text-orange-600 font-semibold tracking-wide">CLIENT REVIEW TOOL</p>
                     </div>
                 </div>
                 
-                <!-- URL input -->
-                <div class="space-y-2">
-                    <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Website URL to Review</label>
-                    <div class="flex gap-2">
-                        <input id="siteUrl" type="url" placeholder="https://example.com" 
-                            class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none">
-                        <button onclick="loadSite()" class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition">Load</button>
-                    </div>
+                <!-- Instructions -->
+                <div class="bg-orange-50 rounded-xl p-3 mb-3 border border-orange-100">
+                    <p class="text-xs text-orange-800 leading-relaxed">
+                        <strong>How to use:</strong> Click anywhere on the website to drop a pin. 
+                        Mark it as 👍 Like, 👎 Dislike, or 🤔 Neutral. Add a comment and save.
+                    </p>
                 </div>
                 
                 <!-- Toggle annotation mode -->
-                <div class="mt-3 flex items-center gap-3">
+                <div class="flex items-center justify-between">
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" id="annotateMode" checked onchange="toggleAnnotateMode()" class="w-4 h-4 text-red-600 rounded">
+                        <input type="checkbox" id="annotateMode" checked onchange="toggleAnnotateMode()" class="w-4 h-4 text-orange-600 rounded">
                         <span class="text-sm font-medium text-gray-700">Annotation Mode</span>
                     </label>
-                    <span id="modeIndicator" class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">ON</span>
+                    <span id="modeIndicator" class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Active</span>
                 </div>
             </div>
             
@@ -168,89 +160,82 @@
             
             <!-- Annotations list -->
             <div class="flex-1 overflow-y-auto" id="annotationsList">
-                <div class="p-5 text-center text-gray-400 text-sm">
-                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-                    Click anywhere on the website<br>to leave feedback
+                <div class="p-8 text-center text-gray-400 text-sm">
+                    <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-6 h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                    </div>
+                    Click anywhere on the site<br>to leave your feedback
                 </div>
             </div>
             
             <!-- Export -->
             <div class="p-4 border-t border-gray-100 space-y-2">
-                <button onclick="exportAnnotations()" class="w-full px-4 py-2.5 bg-gray-900 text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition">
+                <button onclick="exportAnnotations()" class="w-full px-4 py-2.5 bg-orange-600 text-white rounded-xl text-sm font-bold hover:bg-orange-700 transition shadow-sm">
                     📋 Export Feedback Report
                 </button>
-                <button onclick="clearAll()" class="w-full px-4 py-2 text-red-500 text-sm font-semibold hover:bg-red-50 rounded-lg transition">
-                    Clear All Annotations
+                <button onclick="clearAll()" class="w-full px-4 py-2 text-red-500 text-xs font-semibold hover:bg-red-50 rounded-lg transition">
+                    Clear All Feedback
                 </button>
             </div>
         </div>
         
         <!-- Main content area -->
         <div class="flex-1 relative overflow-hidden bg-gray-200">
-            <!-- Iframe container -->
             <div id="iframeContainer" class="absolute inset-0">
                 <iframe id="siteFrame" class="w-full h-full border-0" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
-                
-                <!-- Click overlay for capturing annotations -->
                 <div id="click-overlay"></div>
-                
-                <!-- Pins container -->
                 <div id="pinsContainer"></div>
             </div>
             
-            <!-- Empty state -->
             <div id="emptyState" class="absolute inset-0 flex items-center justify-center bg-gray-50">
                 <div class="text-center space-y-4">
-                    <div class="w-20 h-20 bg-red-100 rounded-3xl flex items-center justify-center mx-auto">
-                        <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zm-7-3v6m0-3H8m3 0h3"/></svg>
+                    <div class="w-20 h-20 bg-orange-100 rounded-3xl flex items-center justify-center mx-auto">
+                        <svg class="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-gray-900">Load a Website to Review</h2>
-                        <p class="text-gray-500 mt-1">Enter the URL in the sidebar and click Load</p>
+                        <h2 class="text-xl font-bold text-gray-900">Loading The Flame Group Website...</h2>
+                        <p class="text-gray-500 mt-1">Click anywhere to annotate</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Comment Popup (hidden by default) -->
+    <!-- Hover label -->
+    <div id="hover-label"></div>
+    
+    <!-- Comment Popup -->
     <div id="commentPopup" class="comment-popup" style="display: none;">
         <div class="bg-gray-900 text-white p-4">
             <div class="flex items-center justify-between">
-                <h3 class="font-bold text-sm">Add Your Feedback</h3>
-                <button onclick="closePopup()" class="text-gray-400 hover:text-white">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                <h3 class="font-bold text-sm">Leave Your Feedback</h3>
+                <button onclick="closePopup()" class="text-gray-400 hover:text-white p-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <p id="popupCoords" class="text-gray-400 text-xs mt-1"></p>
+            <p id="popupCoords" class="text-gray-400 text-[10px] mt-1 font-mono"></p>
         </div>
         <div class="p-4 space-y-4">
-            <!-- Sentiment buttons -->
+            <!-- Sentiment -->
             <div>
-                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Your Rating</label>
+                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-2">Rating</label>
                 <div class="flex gap-2">
-                    <button onclick="selectSentiment('like')" id="btn-like" class="toggle-btn toggle-like flex-1">
-                        👍 Like
-                    </button>
-                    <button onclick="selectSentiment('dislike')" id="btn-dislike" class="toggle-btn toggle-dislike flex-1">
-                        👎 Dislike
-                    </button>
-                    <button onclick="selectSentiment('neutral')" id="btn-neutral" class="toggle-btn toggle-neutral flex-1">
-                        🤔 Neutral
-                    </button>
+                    <button onclick="selectSentiment('like')" id="btn-like" class="toggle-btn toggle-like flex-1">👍 Like</button>
+                    <button onclick="selectSentiment('dislike')" id="btn-dislike" class="toggle-btn toggle-dislike flex-1">👎 Dislike</button>
+                    <button onclick="selectSentiment('neutral')" id="btn-neutral" class="toggle-btn toggle-neutral flex-1">🤔 Neutral</button>
                 </div>
             </div>
             
             <!-- Comment -->
             <div>
-                <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Comment (optional)</label>
+                <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-2">Comment</label>
                 <textarea id="commentInput" rows="3" placeholder="What do you think about this section? Be specific about what you'd like changed..."
-                    class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none resize-none"></textarea>
+                    class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none resize-none"></textarea>
             </div>
             
             <!-- Submit -->
             <button onclick="submitAnnotation()" id="submitBtn"
-                class="w-full py-3 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-full py-3 bg-orange-600 text-white rounded-xl font-bold text-sm hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                 disabled>
                 Save Feedback
             </button>
@@ -258,13 +243,9 @@
     </div>
     
     <script>
-        // ========== CONFIG ==========
-        // Set this to your Cloudflare Worker URL after deployment
-        const API_BASE = window.location.hostname === 'localhost' 
-            ? 'http://localhost:8787' 
-            : ''; // Set your Worker URL here
+        const SITE_URL = 'https://fire-safety.pages.dev/';
+        const API_BASE = ''; // Set Cloudflare Worker URL here after deployment
         
-        // ========== STATE ==========
         let annotations = [];
         let currentSentiment = null;
         let pendingPin = null;
@@ -272,88 +253,51 @@
         
         // ========== INIT ==========
         document.addEventListener('DOMContentLoaded', () => {
+            loadSite();
             loadAnnotations();
             
-            // Click overlay handler
             document.getElementById('click-overlay').addEventListener('click', (e) => {
                 if (!isAnnotating) return;
-                
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(2);
                 const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(2);
-                
                 pendingPin = { x, y };
                 showPopup(e.clientX, e.clientY);
             });
             
-            // ESC to close popup
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') closePopup();
             });
-            
-            // Click outside popup to close
-            document.addEventListener('click', (e) => {
-                const popup = document.getElementById('commentPopup');
-                if (popup.style.display !== 'none' && !popup.contains(e.target)) {
-                    // Don't close if clicking the overlay (that's a new pin)
-                    if (!e.target.id && !e.target.closest('#click-overlay')) {
-                        // closePopup();
-                    }
-                }
-            });
         });
         
-        // ========== SITE LOADING ==========
+        // ========== LOAD SITE ==========
         function loadSite() {
-            const url = document.getElementById('siteUrl').value.trim();
-            if (!url) return;
-            
-            const fullUrl = url.startsWith('http') ? url : 'https://' + url;
-            
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('iframeContainer').style.display = 'block';
-            document.getElementById('siteFrame').src = fullUrl;
-            
-            // Save URL preference
-            localStorage.setItem('firesafety-review-url', fullUrl);
+            document.getElementById('siteFrame').src = SITE_URL;
         }
-        
-        // Load saved URL on start
-        window.addEventListener('load', () => {
-            const saved = localStorage.getItem('firesafety-review-url');
-            if (saved) {
-                document.getElementById('siteUrl').value = saved;
-                loadSite();
-            }
-        });
         
         // ========== ANNOTATION MODE ==========
         function toggleAnnotateMode() {
             isAnnotating = document.getElementById('annotateMode').checked;
             const overlay = document.getElementById('click-overlay');
             const indicator = document.getElementById('modeIndicator');
-            
             if (isAnnotating) {
                 overlay.classList.remove('inactive');
-                indicator.textContent = 'ON';
-                indicator.className = 'text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold';
+                indicator.textContent = 'Active';
+                indicator.className = 'text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider';
             } else {
                 overlay.classList.add('inactive');
-                indicator.textContent = 'OFF';
-                indicator.className = 'text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-semibold';
+                indicator.textContent = 'Off';
+                indicator.className = 'text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider';
             }
         }
         
         // ========== POPUP ==========
         function showPopup(clientX, clientY) {
             const popup = document.getElementById('commentPopup');
-            const sidebar = document.querySelector('.w-\\[360px\\]');
-            const sidebarWidth = sidebar ? sidebar.offsetWidth : 360;
-            
-            // Position popup near the click, but ensure it stays on screen
-            let left = clientX + 10;
-            let top = clientY - 50;
-            
+            let left = clientX + 15;
+            let top = clientY - 30;
             if (left + 360 > window.innerWidth) left = clientX - 360;
             if (top + 400 > window.innerHeight) top = window.innerHeight - 420;
             if (top < 10) top = 10;
@@ -362,14 +306,11 @@
             popup.style.top = top + 'px';
             popup.style.display = 'block';
             
-            // Reset form
             currentSentiment = null;
             document.getElementById('commentInput').value = '';
-            document.getElementById('popupCoords').textContent = `Position: ${pendingPin.x}%, ${pendingPin.y}%`;
+            document.getElementById('popupCoords').textContent = `Pin #${annotations.length + 1} · Position ${pendingPin.x}%, ${pendingPin.y}%`;
             updateSentimentButtons();
             updateSubmitBtn();
-            
-            // Focus comment
             setTimeout(() => document.getElementById('commentInput').focus(), 100);
         }
         
@@ -388,11 +329,7 @@
         function updateSentimentButtons() {
             ['like', 'dislike', 'neutral'].forEach(s => {
                 const btn = document.getElementById('btn-' + s);
-                if (s === currentSentiment) {
-                    btn.classList.add('selected');
-                } else {
-                    btn.classList.remove('selected');
-                }
+                btn.classList.toggle('selected', s === currentSentiment);
             });
         }
         
@@ -400,10 +337,9 @@
             document.getElementById('submitBtn').disabled = !currentSentiment;
         }
         
-        // ========== SUBMIT ANNOTATION ==========
+        // ========== SUBMIT ==========
         async function submitAnnotation() {
             if (!currentSentiment || !pendingPin) return;
-            
             const comment = document.getElementById('commentInput').value.trim();
             const annotation = {
                 id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
@@ -411,10 +347,9 @@
                 y: parseFloat(pendingPin.y),
                 sentiment: currentSentiment,
                 comment: comment,
-                page_url: document.getElementById('siteUrl').value,
+                page_url: SITE_URL,
                 created_at: new Date().toISOString()
             };
-            
             annotations.push(annotation);
             saveAnnotations();
             renderPins();
@@ -426,60 +361,55 @@
         function renderPins() {
             const container = document.getElementById('pinsContainer');
             container.innerHTML = '';
-            
             annotations.forEach((a, i) => {
                 const pin = document.createElement('div');
                 pin.className = `pin pin-${a.sentiment}`;
                 pin.style.left = a.x + '%';
                 pin.style.top = a.y + '%';
                 pin.innerHTML = `<span class="pin-num">${i + 1}</span>`;
-                pin.title = a.comment || a.sentiment;
-                pin.onclick = (e) => {
-                    e.stopPropagation();
-                    highlightAnnotation(a.id);
-                };
+                pin.title = `${a.sentiment.toUpperCase()}${a.comment ? ': ' + a.comment : ''}`;
+                pin.onclick = (e) => { e.stopPropagation(); highlightAnnotation(a.id); };
                 container.appendChild(pin);
             });
         }
         
         function renderSidebar() {
             const list = document.getElementById('annotationsList');
-            
             if (annotations.length === 0) {
-                list.innerHTML = `
-                    <div class="p-5 text-center text-gray-400 text-sm">
-                        <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-                        Click anywhere on the website<br>to leave feedback
-                    </div>`;
+                list.innerHTML = `<div class="p-8 text-center text-gray-400 text-sm">
+                    <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-6 h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+                    </div>
+                    Click anywhere on the site<br>to leave your feedback
+                </div>`;
                 return;
             }
             
-            const sentimentIcons = { like: '👍', dislike: '👎', neutral: '🤔' };
-            const sentimentColors = { like: 'text-green-600', dislike: 'text-red-500', neutral: 'text-amber-500' };
-            const sentimentBg = { like: 'bg-green-50', dislike: 'bg-red-50', neutral: 'bg-amber-50' };
+            const icons = { like: '👍', dislike: '👎', neutral: '🤔' };
+            const colors = { like: 'text-green-600', dislike: 'text-red-500', neutral: 'text-amber-500' };
+            const bgs = { like: 'bg-green-50', dislike: 'bg-red-50', neutral: 'bg-amber-50' };
             
             list.innerHTML = annotations.map((a, i) => `
                 <div class="sidebar-item p-3 px-5 cursor-pointer" id="item-${a.id}" onclick="highlightAnnotation('${a.id}')">
                     <div class="flex items-start gap-3">
-                        <div class="w-7 h-7 rounded-full ${sentimentBg[a.sentiment]} flex items-center justify-center shrink-0 mt-0.5">
-                            <span class="text-xs font-bold ${sentimentColors[a.sentiment]}">${i + 1}</span>
+                        <div class="w-7 h-7 rounded-full ${bgs[a.sentiment]} flex items-center justify-center shrink-0 mt-0.5">
+                            <span class="text-xs font-bold ${colors[a.sentiment]}">${i + 1}</span>
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center gap-2">
-                                <span class="text-sm">${sentimentIcons[a.sentiment]}</span>
-                                <span class="text-xs font-semibold ${sentimentColors[a.sentiment]} uppercase">${a.sentiment}</span>
-                                <span class="text-[10px] text-gray-400 ml-auto">${formatTime(a.created_at)}</span>
+                                <span class="text-sm">${icons[a.sentiment]}</span>
+                                <span class="text-[10px] font-bold ${colors[a.sentiment]} uppercase tracking-wider">${a.sentiment}</span>
+                                <span class="text-[10px] text-gray-400 ml-auto font-mono">${formatTime(a.created_at)}</span>
                             </div>
                             ${a.comment ? `<p class="text-sm text-gray-700 mt-1 leading-relaxed">${escapeHtml(a.comment)}</p>` : '<p class="text-xs text-gray-400 mt-1 italic">No comment</p>'}
                         </div>
-                        <button onclick="event.stopPropagation(); deleteAnnotation('${a.id}')" class="delete-btn text-gray-400 hover:text-red-500 p-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        <button onclick="event.stopPropagation(); deleteAnnotation('${a.id}')" class="delete-btn text-gray-400 hover:text-red-500 p-1 shrink-0">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>
                 </div>
             `).join('');
             
-            // Update counts
             document.getElementById('likeCount').textContent = annotations.filter(a => a.sentiment === 'like').length;
             document.getElementById('dislikeCount').textContent = annotations.filter(a => a.sentiment === 'dislike').length;
             document.getElementById('neutralCount').textContent = annotations.filter(a => a.sentiment === 'neutral').length;
@@ -487,24 +417,16 @@
         }
         
         function highlightAnnotation(id) {
-            // Highlight sidebar item
             document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
             const item = document.getElementById('item-' + id);
-            if (item) {
-                item.classList.add('active');
-                item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-            
-            // Flash the pin
+            if (item) { item.classList.add('active'); item.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
             const a = annotations.find(x => x.id === id);
             if (a) {
-                const pins = document.querySelectorAll('.pin');
                 const idx = annotations.indexOf(a);
+                const pins = document.querySelectorAll('.pin');
                 if (pins[idx]) {
-                    pins[idx].style.transform = 'rotate(-45deg) translate(-50%, -50%) scale(1.5)';
-                    setTimeout(() => {
-                        pins[idx].style.transform = '';
-                    }, 400);
+                    pins[idx].style.transform = 'rotate(-45deg) translate(-50%, -50%) scale(1.6)';
+                    setTimeout(() => { if (pins[idx]) pins[idx].style.transform = ''; }, 500);
                 }
             }
         }
@@ -518,119 +440,82 @@
         
         // ========== PERSISTENCE ==========
         function saveAnnotations() {
-            localStorage.setItem('firesafety-annotations', JSON.stringify(annotations));
-            
-            // Also try to save to API if configured
-            if (API_BASE) {
-                fetch(API_BASE + '/api/annotations', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(annotations)
-                }).catch(() => {}); // Silent fail if API not available
-            }
+            localStorage.setItem('flame-group-annotations', JSON.stringify(annotations));
         }
         
         function loadAnnotations() {
-            const saved = localStorage.getItem('firesafety-annotations');
-            if (saved) {
-                try {
-                    annotations = JSON.parse(saved);
-                } catch(e) {
-                    annotations = [];
-                }
-            }
+            const saved = localStorage.getItem('flame-group-annotations');
+            if (saved) { try { annotations = JSON.parse(saved); } catch(e) { annotations = []; } }
             renderPins();
             renderSidebar();
         }
         
         // ========== EXPORT ==========
         function exportAnnotations() {
-            if (annotations.length === 0) {
-                alert('No annotations to export yet.');
-                return;
-            }
+            if (annotations.length === 0) { alert('No feedback yet.'); return; }
             
             const likes = annotations.filter(a => a.sentiment === 'like');
             const dislikes = annotations.filter(a => a.sentiment === 'dislike');
             const neutrals = annotations.filter(a => a.sentiment === 'neutral');
             
-            let report = `🔥 FIRE SAFETY — CLIENT FEEDBACK REPORT\n`;
-            report += `${'='.repeat(50)}\n`;
-            report += `Generated: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n`;
-            report += `Website: ${document.getElementById('siteUrl').value}\n\n`;
-            
-            report += `📊 SUMMARY\n`;
-            report += `${'─'.repeat(30)}\n`;
-            report += `👍 Likes: ${likes.length}\n`;
-            report += `👎 Dislikes: ${dislikes.length}\n`;
-            report += `🤔 Neutral: ${neutrals.length}\n`;
-            report += `📝 Total: ${annotations.length}\n\n`;
+            let r = `🔥 THE FLAME GROUP — CLIENT FEEDBACK REPORT\n`;
+            r += `${'═'.repeat(50)}\n`;
+            r += `Generated: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n`;
+            r += `Website: ${SITE_URL}\n\n`;
+            r += `📊 SUMMARY\n${'─'.repeat(30)}\n`;
+            r += `👍 Likes: ${likes.length}\n👎 Dislikes: ${dislikes.length}\n🤔 Neutral: ${neutrals.length}\n📝 Total: ${annotations.length}\n\n`;
             
             if (dislikes.length > 0) {
-                report += `❌ ITEMS TO CHANGE\n`;
-                report += `${'─'.repeat(30)}\n`;
+                r += `❌ NEED TO CHANGE\n${'─'.repeat(30)}\n`;
                 dislikes.forEach((a, i) => {
-                    report += `\n#${i + 1} — Position (${a.x}%, ${a.y}%)\n`;
-                    if (a.comment) report += `   Comment: ${a.comment}\n`;
-                    report += `   Added: ${new Date(a.created_at).toLocaleString()}\n`;
+                    r += `\n#${i + 1} — Position (${a.x}%, ${a.y}%)\n`;
+                    if (a.comment) r += `   "${a.comment}"\n`;
                 });
-                report += '\n';
+                r += '\n';
             }
-            
             if (likes.length > 0) {
-                report += `✅ ITEMS APPROVED\n`;
-                report += `${'─'.repeat(30)}\n`;
+                r += `✅ APPROVED\n${'─'.repeat(30)}\n`;
                 likes.forEach((a, i) => {
-                    report += `\n#${i + 1} — Position (${a.x}%, ${a.y}%)\n`;
-                    if (a.comment) report += `   Comment: ${a.comment}\n`;
-                    report += `   Added: ${new Date(a.created_at).toLocaleString()}\n`;
+                    r += `\n#${i + 1} — Position (${a.x}%, ${a.y}%)\n`;
+                    if (a.comment) r += `   "${a.comment}"\n`;
                 });
-                report += '\n';
+                r += '\n';
             }
-            
             if (neutrals.length > 0) {
-                report += `🤔 NEUTRAL / QUESTIONS\n`;
-                report += `${'─'.repeat(30)}\n`;
+                r += `🤔 QUESTIONS / NOTES\n${'─'.repeat(30)}\n`;
                 neutrals.forEach((a, i) => {
-                    report += `\n#${i + 1} — Position (${a.x}%, ${a.y}%)\n`;
-                    if (a.comment) report += `   Comment: ${a.comment}\n`;
-                    report += `   Added: ${new Date(a.created_at).toLocaleString()}\n`;
+                    r += `\n#${i + 1} — Position (${a.x}%, ${a.y}%)\n`;
+                    if (a.comment) r += `   "${a.comment}"\n`;
                 });
             }
             
-            // Download as text file
-            const blob = new Blob([report], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
+            const blob = new Blob([r], { type: 'text/plain' });
             const link = document.createElement('a');
-            link.href = url;
-            link.download = `fire-safety-feedback-${new Date().toISOString().split('T')[0]}.txt`;
+            link.href = URL.createObjectURL(blob);
+            link.download = `flame-group-feedback-${new Date().toISOString().split('T')[0]}.txt`;
             link.click();
-            URL.revokeObjectURL(url);
         }
         
         function clearAll() {
-            if (!confirm('Are you sure you want to delete all annotations? This cannot be undone.')) return;
+            if (!confirm('Delete all feedback? This cannot be undone.')) return;
             annotations = [];
             saveAnnotations();
             renderPins();
             renderSidebar();
         }
         
-        // ========== UTILS ==========
         function formatTime(iso) {
-            const d = new Date(iso);
-            const now = new Date();
-            const diff = now - d;
-            if (diff < 60000) return 'Just now';
+            const diff = new Date() - new Date(iso);
+            if (diff < 60000) return 'now';
             if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
             if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
-            return d.toLocaleDateString();
+            return new Date(iso).toLocaleDateString();
         }
         
         function escapeHtml(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
         }
     </script>
 </body>
