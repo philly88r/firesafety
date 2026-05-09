@@ -1,0 +1,16 @@
+name = "firesafety-review"
+main = "worker/index.js"
+compatibility_date = "2024-12-01"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "firesafety-annotations"
+database_id = "YOUR_D1_DATABASE_ID_HERE"  # Replace after running: wrangler d1 create firesafety-annotations
+
+# Static assets (serves the frontend)
+[site]
+bucket = "./"
+
+[observability]
+enabled = true
