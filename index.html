@@ -8,107 +8,56 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; margin: 0; overflow: hidden; height: 100vh; }
-        
-        #click-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: 10;
-            cursor: crosshair;
-            pointer-events: auto;
-        }
+        #click-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; cursor: crosshair; pointer-events: auto; }
         #click-overlay.inactive { pointer-events: none; cursor: default; }
-        
-        .pin {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg) translate(-50%, -50%);
-            transform-origin: 0 0;
-            cursor: pointer;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
-            transition: transform 0.15s ease;
-            animation: pinDrop 0.3s ease;
-        }
+
+        .pin { position: absolute; width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg) translate(-50%, -50%); transform-origin: 0 0; cursor: pointer; z-index: 20; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3); transition: transform 0.15s ease; animation: pinDrop 0.3s ease; }
         .pin:hover { transform: rotate(-45deg) translate(-50%, -50%) scale(1.15); z-index: 25; }
-        .pin-like { background: #22c55e; }
-        .pin-dislike { background: #ef4444; }
-        .pin-neutral { background: #f59e0b; }
-        .pin .pin-num {
-            transform: rotate(45deg);
-            font-size: 10px;
-            font-weight: 700;
-            color: white;
-        }
-        @keyframes pinDrop {
-            0% { opacity: 0; transform: rotate(-45deg) translate(-50%, -100%) scale(0.5); }
-            100% { opacity: 1; transform: rotate(-45deg) translate(-50%, -50%) scale(1); }
-        }
-        
-        .comment-popup {
-            position: fixed;
-            z-index: 100;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            width: 340px;
-            animation: popIn 0.2s ease;
-            overflow: hidden;
-        }
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.9) translateY(10px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        
-        .sidebar-item {
-            transition: all 0.15s ease;
-            border-left: 3px solid transparent;
-        }
+        .pin-like { background: #22c55e; } .pin-dislike { background: #ef4444; } .pin-neutral { background: #f59e0b; }
+        .pin .pin-num { transform: rotate(45deg); font-size: 10px; font-weight: 700; color: white; }
+        @keyframes pinDrop { 0% { opacity: 0; transform: rotate(-45deg) translate(-50%, -100%) scale(0.5); } 100% { opacity: 1; transform: rotate(-45deg) translate(-50%, -50%) scale(1); } }
+
+        .shape-box { position: absolute; border: 3px solid; border-radius: 6px; z-index: 18; pointer-events: auto; cursor: pointer; transition: box-shadow 0.15s ease; }
+        .shape-box:hover { box-shadow: 0 0 0 3px rgba(0,0,0,0.15); }
+        .shape-box.like { border-color: #22c55e; background: rgba(34,197,94,0.08); }
+        .shape-box.dislike { border-color: #ef4444; background: rgba(239,68,68,0.08); }
+        .shape-box.neutral { border-color: #f59e0b; background: rgba(245,158,11,0.08); }
+
+        .shape-circle { position: absolute; border: 3px solid; border-radius: 50%; z-index: 18; pointer-events: auto; cursor: pointer; transition: box-shadow 0.15s ease; }
+        .shape-circle:hover { box-shadow: 0 0 0 3px rgba(0,0,0,0.15); }
+        .shape-circle.like { border-color: #22c55e; background: rgba(34,197,94,0.08); }
+        .shape-circle.dislike { border-color: #ef4444; background: rgba(239,68,68,0.08); }
+        .shape-circle.neutral { border-color: #f59e0b; background: rgba(245,158,11,0.08); }
+
+        .shape-label { position: absolute; top: -10px; left: -10px; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); z-index: 19; }
+
+        .draw-preview { position: absolute; z-index: 15; pointer-events: none; border: 2px dashed #ea580c; background: rgba(234, 88, 12, 0.06); }
+        .draw-preview.circle { border-radius: 50%; }
+
+        .comment-popup { position: fixed; z-index: 100; background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 340px; animation: popIn 0.2s ease; overflow: hidden; }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.9) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+
+        .sidebar-item { transition: all 0.15s ease; border-left: 3px solid transparent; }
         .sidebar-item:hover { background: #fff7ed; }
         .sidebar-item.active { background: #fff7ed; border-left-color: #ea580c; }
         .sidebar-item:hover .delete-btn { opacity: 1; }
         .delete-btn { opacity: 0; transition: opacity 0.15s; }
-        
-        .toggle-btn {
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            border: 2px solid transparent;
-            text-align: center;
-        }
+
+        .toggle-btn { padding: 8px 12px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.15s ease; border: 2px solid transparent; text-align: center; }
         .toggle-btn.selected { transform: scale(1.05); }
         .toggle-like.selected { background: #dcfce7; color: #16a34a; border-color: #22c55e; }
         .toggle-dislike.selected { background: #fef2f2; color: #dc2626; border-color: #ef4444; }
         .toggle-neutral.selected { background: #fffbeb; color: #d97706; border-color: #f59e0b; }
 
-        /* Tooltip on hover */
-        #hover-label {
-            position: fixed;
-            z-index: 15;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 6px;
-            pointer-events: none;
-            display: none;
-            white-space: nowrap;
-        }
+        .tool-btn { padding: 7px 8px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; transition: all 0.15s ease; border: 2px solid #e5e7eb; background: white; color: #6b7280; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .tool-btn.active { border-color: #ea580c; background: #fff7ed; color: #c2410c; }
+        .tool-btn:hover:not(.active) { background: #f9fafb; }
     </style>
 </head>
 <body class="bg-gray-100">
     <div id="app" class="flex h-screen">
         <!-- Sidebar -->
         <div class="w-[350px] bg-white border-r border-gray-200 flex flex-col h-full shrink-0">
-            <!-- Header -->
             <div class="p-5 border-b border-orange-50">
                 <div class="flex items-center gap-3 mb-4">
                     <div class="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center shadow-sm">
@@ -119,15 +68,23 @@
                         <p class="text-[11px] text-orange-600 font-semibold tracking-wide">CLIENT REVIEW TOOL</p>
                     </div>
                 </div>
-                
-                <!-- Instructions -->
+
                 <div class="bg-orange-50 rounded-xl p-3 mb-3 border border-orange-100">
                     <p class="text-xs text-orange-800 leading-relaxed">
-                        <strong>How to use:</strong> Click anywhere on the website to drop a pin. 
-                        Mark it as 👍 Like, 👎 Dislike, or 🤔 Neutral. Add a comment and save.
+                        <strong>How to use:</strong> Select a tool below, then click or drag on the website to mark up sections. Rate each mark 👍/👎/🤔 with a comment.
                     </p>
                 </div>
-                
+
+                <!-- Drawing tools -->
+                <div class="mb-3">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Drawing Tool</label>
+                    <div class="flex gap-1.5" id="drawTools">
+                        <button onclick="setDrawMode('pin')" id="tool-pin" class="tool-btn active">📍 Pin</button>
+                        <button onclick="setDrawMode('rect')" id="tool-rect" class="tool-btn">◻️ Box</button>
+                        <button onclick="setDrawMode('circle')" id="tool-circle" class="tool-btn">⭕ Circle</button>
+                    </div>
+                </div>
+
                 <!-- Toggle annotation mode -->
                 <div class="flex items-center justify-between">
                     <label class="flex items-center gap-2 cursor-pointer">
@@ -137,86 +94,60 @@
                     <span id="modeIndicator" class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Active</span>
                 </div>
             </div>
-            
+
             <!-- Stats -->
             <div class="px-5 py-3 bg-gray-50 border-b border-gray-100 flex gap-4">
-                <div class="text-center">
-                    <div id="likeCount" class="text-lg font-bold text-green-600">0</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Likes</div>
-                </div>
-                <div class="text-center">
-                    <div id="dislikeCount" class="text-lg font-bold text-red-500">0</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Dislikes</div>
-                </div>
-                <div class="text-center">
-                    <div id="neutralCount" class="text-lg font-bold text-amber-500">0</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Neutral</div>
-                </div>
-                <div class="text-center ml-auto">
-                    <div id="totalCount" class="text-lg font-bold text-gray-900">0</div>
-                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Total</div>
-                </div>
+                <div class="text-center"><div id="likeCount" class="text-lg font-bold text-green-600">0</div><div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Likes</div></div>
+                <div class="text-center"><div id="dislikeCount" class="text-lg font-bold text-red-500">0</div><div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Dislikes</div></div>
+                <div class="text-center"><div id="neutralCount" class="text-lg font-bold text-amber-500">0</div><div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Neutral</div></div>
+                <div class="text-center ml-auto"><div id="totalCount" class="text-lg font-bold text-gray-900">0</div><div class="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Total</div></div>
             </div>
-            
+
             <!-- Annotations list -->
             <div class="flex-1 overflow-y-auto" id="annotationsList">
                 <div class="p-8 text-center text-gray-400 text-sm">
                     <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
                         <svg class="w-6 h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
                     </div>
-                    Click anywhere on the site<br>to leave your feedback
+                    Click or drag on the site<br>to leave your feedback
                 </div>
             </div>
-            
+
             <!-- Export -->
             <div class="p-4 border-t border-gray-100 space-y-2">
-                <button onclick="exportAnnotations()" class="w-full px-4 py-2.5 bg-orange-600 text-white rounded-xl text-sm font-bold hover:bg-orange-700 transition shadow-sm">
-                    📋 Export Feedback Report
-                </button>
-                <button onclick="clearAll()" class="w-full px-4 py-2 text-red-500 text-xs font-semibold hover:bg-red-50 rounded-lg transition">
-                    Clear All Feedback
-                </button>
+                <button onclick="exportAnnotations()" class="w-full px-4 py-2.5 bg-orange-600 text-white rounded-xl text-sm font-bold hover:bg-orange-700 transition shadow-sm">📋 Export Feedback Report</button>
+                <button onclick="clearAll()" class="w-full px-4 py-2 text-red-500 text-xs font-semibold hover:bg-red-50 rounded-lg transition">Clear All Feedback</button>
             </div>
         </div>
-        
-        <!-- Main content area -->
+
+        <!-- Main -->
         <div class="flex-1 relative overflow-hidden bg-gray-200">
             <div id="iframeContainer" class="absolute inset-0">
                 <iframe id="siteFrame" class="w-full h-full border-0" sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
                 <div id="click-overlay"></div>
                 <div id="pinsContainer"></div>
             </div>
-            
             <div id="emptyState" class="absolute inset-0 flex items-center justify-center bg-gray-50">
                 <div class="text-center space-y-4">
                     <div class="w-20 h-20 bg-orange-100 rounded-3xl flex items-center justify-center mx-auto">
                         <svg class="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
                     </div>
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-900">Loading The Flame Group Website...</h2>
-                        <p class="text-gray-500 mt-1">Click anywhere to annotate</p>
-                    </div>
+                    <div><h2 class="text-xl font-bold text-gray-900">Loading The Flame Group Website...</h2><p class="text-gray-500 mt-1">Click or drag anywhere to annotate</p></div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Hover label -->
-    <div id="hover-label"></div>
-    
+
     <!-- Comment Popup -->
     <div id="commentPopup" class="comment-popup" style="display: none;">
         <div class="bg-gray-900 text-white p-4">
             <div class="flex items-center justify-between">
                 <h3 class="font-bold text-sm">Leave Your Feedback</h3>
-                <button onclick="closePopup()" class="text-gray-400 hover:text-white p-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+                <button onclick="closePopup()" class="text-gray-400 hover:text-white p-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
             </div>
             <p id="popupCoords" class="text-gray-400 text-[10px] mt-1 font-mono"></p>
         </div>
         <div class="p-4 space-y-4">
-            <!-- Sentiment -->
             <div>
                 <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-2">Rating</label>
                 <div class="flex gap-2">
@@ -225,298 +156,226 @@
                     <button onclick="selectSentiment('neutral')" id="btn-neutral" class="toggle-btn toggle-neutral flex-1">🤔 Neutral</button>
                 </div>
             </div>
-            
-            <!-- Comment -->
             <div>
                 <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-2">Comment</label>
-                <textarea id="commentInput" rows="3" placeholder="What do you think about this section? Be specific about what you'd like changed..."
-                    class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none resize-none"></textarea>
+                <textarea id="commentInput" rows="3" placeholder="What do you think about this section?" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none resize-none"></textarea>
             </div>
-            
-            <!-- Submit -->
-            <button onclick="submitAnnotation()" id="submitBtn"
-                class="w-full py-3 bg-orange-600 text-white rounded-xl font-bold text-sm hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                disabled>
-                Save Feedback
-            </button>
+            <button onclick="submitAnnotation()" id="submitBtn" class="w-full py-3 bg-orange-600 text-white rounded-xl font-bold text-sm hover:bg-orange-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm" disabled>Save Feedback</button>
         </div>
     </div>
-    
+
     <script>
         const SITE_URL = 'https://fire-safety.pages.dev/';
-        const API_BASE = ''; // Set Cloudflare Worker URL here after deployment
-        
-        let annotations = [];
-        let currentSentiment = null;
-        let pendingPin = null;
-        let isAnnotating = true;
-        
-        // ========== INIT ==========
+        let annotations = [], currentSentiment = null, pendingShape = null, isAnnotating = true, drawMode = 'pin', isDrawing = false, drawStart = null, drawPreview = null;
+
         document.addEventListener('DOMContentLoaded', () => {
-            loadSite();
-            loadAnnotations();
-            
-            document.getElementById('click-overlay').addEventListener('click', (e) => {
-                if (!isAnnotating) return;
+            loadSite(); loadAnnotations();
+            const overlay = document.getElementById('click-overlay');
+
+            overlay.addEventListener('mousedown', (e) => {
+                if (!isAnnotating || drawMode === 'pin') return;
+                isDrawing = true;
+                const rect = overlay.getBoundingClientRect();
+                drawStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                drawPreview = document.createElement('div');
+                drawPreview.className = 'draw-preview' + (drawMode === 'circle' ? ' circle' : '');
+                drawPreview.style.left = drawStart.x + 'px';
+                drawPreview.style.top = drawStart.y + 'px';
+                drawPreview.style.width = '0px';
+                drawPreview.style.height = '0px';
+                overlay.appendChild(drawPreview);
+            });
+
+            overlay.addEventListener('mousemove', (e) => {
+                if (!isDrawing || !drawPreview) return;
+                const rect = overlay.getBoundingClientRect();
+                const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+                if (drawMode === 'circle') {
+                    const r = Math.sqrt((mx - drawStart.x) ** 2 + (my - drawStart.y) ** 2);
+                    drawPreview.style.width = (r * 2) + 'px'; drawPreview.style.height = (r * 2) + 'px';
+                    drawPreview.style.left = (drawStart.x - r) + 'px'; drawPreview.style.top = (drawStart.y - r) + 'px';
+                } else {
+                    drawPreview.style.left = Math.min(drawStart.x, mx) + 'px';
+                    drawPreview.style.top = Math.min(drawStart.y, my) + 'px';
+                    drawPreview.style.width = Math.abs(mx - drawStart.x) + 'px';
+                    drawPreview.style.height = Math.abs(my - drawStart.y) + 'px';
+                }
+            });
+
+            overlay.addEventListener('mouseup', (e) => {
+                if (!isDrawing) return;
+                isDrawing = false;
+                if (drawPreview) {
+                    const rect = overlay.getBoundingClientRect();
+                    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+                    const x1 = (drawStart.x / rect.width * 100).toFixed(2), y1 = (drawStart.y / rect.height * 100).toFixed(2);
+                    const x2 = (mx / rect.width * 100).toFixed(2), y2 = (my / rect.height * 100).toFixed(2);
+                    if (Math.abs(parseFloat(x2) - parseFloat(x1)) < 1 && Math.abs(parseFloat(y2) - parseFloat(y1)) < 1) {
+                        drawPreview.remove(); drawPreview = null;
+                        pendingShape = { shape: 'pin', x: x1, y: y1 };
+                        showPopup(e.clientX, e.clientY); return;
+                    }
+                    pendingShape = { shape: drawMode, x1: parseFloat(x1), y1: parseFloat(y1), x2: parseFloat(x2), y2: parseFloat(y2) };
+                    drawPreview.remove(); drawPreview = null;
+                    showPopup(e.clientX, e.clientY);
+                }
+            });
+
+            overlay.addEventListener('click', (e) => {
+                if (!isAnnotating || drawMode !== 'pin') return;
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(2);
                 const y = ((e.clientY - rect.top) / rect.height * 100).toFixed(2);
-                pendingPin = { x, y };
+                pendingShape = { shape: 'pin', x, y };
                 showPopup(e.clientX, e.clientY);
             });
-            
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') closePopup();
-            });
+
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePopup(); });
         });
-        
-        // ========== LOAD SITE ==========
+
+        function setDrawMode(mode) {
+            drawMode = mode;
+            document.querySelectorAll('#drawTools .tool-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tool-' + mode).classList.add('active');
+        }
+
         function loadSite() {
             document.getElementById('emptyState').style.display = 'none';
             document.getElementById('iframeContainer').style.display = 'block';
             document.getElementById('siteFrame').src = SITE_URL;
         }
-        
-        // ========== ANNOTATION MODE ==========
+
         function toggleAnnotateMode() {
             isAnnotating = document.getElementById('annotateMode').checked;
             const overlay = document.getElementById('click-overlay');
-            const indicator = document.getElementById('modeIndicator');
-            if (isAnnotating) {
-                overlay.classList.remove('inactive');
-                indicator.textContent = 'Active';
-                indicator.className = 'text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider';
-            } else {
-                overlay.classList.add('inactive');
-                indicator.textContent = 'Off';
-                indicator.className = 'text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider';
-            }
+            const ind = document.getElementById('modeIndicator');
+            if (isAnnotating) { overlay.classList.remove('inactive'); ind.textContent = 'Active'; ind.className = 'text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider'; }
+            else { overlay.classList.add('inactive'); ind.textContent = 'Off'; ind.className = 'text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider'; }
         }
-        
-        // ========== POPUP ==========
-        function showPopup(clientX, clientY) {
+
+        function showPopup(cx, cy) {
             const popup = document.getElementById('commentPopup');
-            let left = clientX + 15;
-            let top = clientY - 30;
-            if (left + 360 > window.innerWidth) left = clientX - 360;
+            let left = cx + 15, top = cy - 30;
+            if (left + 360 > window.innerWidth) left = cx - 360;
             if (top + 400 > window.innerHeight) top = window.innerHeight - 420;
             if (top < 10) top = 10;
-            
-            popup.style.left = left + 'px';
-            popup.style.top = top + 'px';
-            popup.style.display = 'block';
-            
+            popup.style.left = left + 'px'; popup.style.top = top + 'px'; popup.style.display = 'block';
             currentSentiment = null;
             document.getElementById('commentInput').value = '';
-            document.getElementById('popupCoords').textContent = `Pin #${annotations.length + 1} · Position ${pendingPin.x}%, ${pendingPin.y}%`;
-            updateSentimentButtons();
-            updateSubmitBtn();
+            const label = pendingShape.shape === 'pin' ? 'Pin' : pendingShape.shape === 'rect' ? 'Box' : 'Circle';
+            document.getElementById('popupCoords').textContent = `${label} #${annotations.length + 1}`;
+            updateSentimentButtons(); updateSubmitBtn();
             setTimeout(() => document.getElementById('commentInput').focus(), 100);
         }
-        
-        function closePopup() {
-            document.getElementById('commentPopup').style.display = 'none';
-            pendingPin = null;
-            currentSentiment = null;
-        }
-        
-        function selectSentiment(s) {
-            currentSentiment = s;
-            updateSentimentButtons();
-            updateSubmitBtn();
-        }
-        
-        function updateSentimentButtons() {
-            ['like', 'dislike', 'neutral'].forEach(s => {
-                const btn = document.getElementById('btn-' + s);
-                btn.classList.toggle('selected', s === currentSentiment);
-            });
-        }
-        
-        function updateSubmitBtn() {
-            document.getElementById('submitBtn').disabled = !currentSentiment;
-        }
-        
-        // ========== SUBMIT ==========
-        async function submitAnnotation() {
-            if (!currentSentiment || !pendingPin) return;
+
+        function closePopup() { document.getElementById('commentPopup').style.display = 'none'; pendingShape = null; currentSentiment = null; }
+        function selectSentiment(s) { currentSentiment = s; updateSentimentButtons(); updateSubmitBtn(); }
+        function updateSentimentButtons() { ['like','dislike','neutral'].forEach(s => document.getElementById('btn-'+s).classList.toggle('selected', s === currentSentiment)); }
+        function updateSubmitBtn() { document.getElementById('submitBtn').disabled = !currentSentiment; }
+
+        function submitAnnotation() {
+            if (!currentSentiment || !pendingShape) return;
             const comment = document.getElementById('commentInput').value.trim();
-            const annotation = {
+            const a = {
                 id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5),
-                x: parseFloat(pendingPin.x),
-                y: parseFloat(pendingPin.y),
-                sentiment: currentSentiment,
-                comment: comment,
-                page_url: SITE_URL,
-                created_at: new Date().toISOString()
+                sentiment: currentSentiment, comment, page_url: SITE_URL, created_at: new Date().toISOString(),
+                shape: pendingShape.shape,
+                x: pendingShape.x || null, y: pendingShape.y || null,
+                x1: pendingShape.x1 || null, y1: pendingShape.y1 || null,
+                x2: pendingShape.x2 || null, y2: pendingShape.y2 || null
             };
-            annotations.push(annotation);
-            saveAnnotations();
-            renderPins();
-            renderSidebar();
-            closePopup();
+            annotations.push(a); saveAnnotations(); renderAll(); closePopup();
         }
-        
-        // ========== RENDER ==========
-        function renderPins() {
-            const container = document.getElementById('pinsContainer');
-            container.innerHTML = '';
+
+        function renderAll() { renderShapes(); renderSidebar(); }
+
+        function renderShapes() {
+            const c = document.getElementById('pinsContainer'); c.innerHTML = '';
             annotations.forEach((a, i) => {
-                const pin = document.createElement('div');
-                pin.className = `pin pin-${a.sentiment}`;
-                pin.style.left = a.x + '%';
-                pin.style.top = a.y + '%';
-                pin.innerHTML = `<span class="pin-num">${i + 1}</span>`;
-                pin.title = `${a.sentiment.toUpperCase()}${a.comment ? ': ' + a.comment : ''}`;
-                pin.onclick = (e) => { e.stopPropagation(); highlightAnnotation(a.id); };
-                container.appendChild(pin);
+                if (a.shape === 'pin') {
+                    const pin = document.createElement('div');
+                    pin.className = `pin pin-${a.sentiment}`;
+                    pin.style.left = a.x + '%'; pin.style.top = a.y + '%';
+                    pin.innerHTML = `<span class="pin-num">${i+1}</span>`;
+                    pin.title = `${a.sentiment.toUpperCase()}${a.comment ? ': ' + a.comment : ''}`;
+                    pin.onclick = (e) => { e.stopPropagation(); highlightAnnotation(a.id); };
+                    c.appendChild(pin);
+                } else {
+                    const shape = document.createElement('div');
+                    shape.className = `${a.shape === 'rect' ? 'shape-box' : 'shape-circle'} ${a.sentiment}`;
+                    const l = Math.min(a.x1, a.x2), t = Math.min(a.y1, a.y2);
+                    const w = Math.abs(a.x2 - a.x1), h = Math.abs(a.y2 - a.y1);
+                    if (a.shape === 'rect') {
+                        shape.style.left = l + '%'; shape.style.top = t + '%'; shape.style.width = w + '%'; shape.style.height = h + '%';
+                    } else {
+                        shape.style.left = l + '%'; shape.style.top = t + '%'; shape.style.width = w + '%'; shape.style.height = h + '%';
+                    }
+                    const bgColor = a.sentiment === 'like' ? '#22c55e' : a.sentiment === 'dislike' ? '#ef4444' : '#f59e0b';
+                    const lbl = document.createElement('div'); lbl.className = 'shape-label'; lbl.style.backgroundColor = bgColor; lbl.textContent = i + 1;
+                    shape.appendChild(lbl);
+                    shape.title = `${a.sentiment.toUpperCase()} — ${a.shape}${a.comment ? ': ' + a.comment : ''}`;
+                    shape.onclick = (e) => { e.stopPropagation(); highlightAnnotation(a.id); };
+                    c.appendChild(shape);
+                }
             });
         }
-        
+
         function renderSidebar() {
             const list = document.getElementById('annotationsList');
             if (annotations.length === 0) {
-                list.innerHTML = `<div class="p-8 text-center text-gray-400 text-sm">
-                    <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <svg class="w-6 h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
-                    </div>
-                    Click anywhere on the site<br>to leave your feedback
-                </div>`;
+                list.innerHTML = `<div class="p-8 text-center text-gray-400 text-sm"><div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-3"><svg class="w-6 h-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg></div>Click or drag on the site<br>to leave your feedback</div>`;
                 return;
             }
-            
-            const icons = { like: '👍', dislike: '👎', neutral: '🤔' };
-            const colors = { like: 'text-green-600', dislike: 'text-red-500', neutral: 'text-amber-500' };
-            const bgs = { like: 'bg-green-50', dislike: 'bg-red-50', neutral: 'bg-amber-50' };
-            
-            list.innerHTML = annotations.map((a, i) => `
+            const icons = {like:'👍',dislike:'👎',neutral:'🤔'}, colors = {like:'text-green-600',dislike:'text-red-500',neutral:'text-amber-500'}, bgs = {like:'bg-green-50',dislike:'bg-red-50',neutral:'bg-amber-50'}, shapeIcons = {pin:'📍',rect:'◻️',circle:'⭕'};
+            list.innerHTML = annotations.map((a,i) => `
                 <div class="sidebar-item p-3 px-5 cursor-pointer" id="item-${a.id}" onclick="highlightAnnotation('${a.id}')">
                     <div class="flex items-start gap-3">
-                        <div class="w-7 h-7 rounded-full ${bgs[a.sentiment]} flex items-center justify-center shrink-0 mt-0.5">
-                            <span class="text-xs font-bold ${colors[a.sentiment]}">${i + 1}</span>
-                        </div>
+                        <div class="w-7 h-7 rounded-full ${bgs[a.sentiment]} flex items-center justify-center shrink-0 mt-0.5"><span class="text-xs font-bold ${colors[a.sentiment]}">${i+1}</span></div>
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs">${shapeIcons[a.shape]||'📍'}</span>
                                 <span class="text-sm">${icons[a.sentiment]}</span>
                                 <span class="text-[10px] font-bold ${colors[a.sentiment]} uppercase tracking-wider">${a.sentiment}</span>
                                 <span class="text-[10px] text-gray-400 ml-auto font-mono">${formatTime(a.created_at)}</span>
                             </div>
                             ${a.comment ? `<p class="text-sm text-gray-700 mt-1 leading-relaxed">${escapeHtml(a.comment)}</p>` : '<p class="text-xs text-gray-400 mt-1 italic">No comment</p>'}
                         </div>
-                        <button onclick="event.stopPropagation(); deleteAnnotation('${a.id}')" class="delete-btn text-gray-400 hover:text-red-500 p-1 shrink-0">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
+                        <button onclick="event.stopPropagation(); deleteAnnotation('${a.id}')" class="delete-btn text-gray-400 hover:text-red-500 p-1 shrink-0"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
                     </div>
-                </div>
-            `).join('');
-            
-            document.getElementById('likeCount').textContent = annotations.filter(a => a.sentiment === 'like').length;
-            document.getElementById('dislikeCount').textContent = annotations.filter(a => a.sentiment === 'dislike').length;
-            document.getElementById('neutralCount').textContent = annotations.filter(a => a.sentiment === 'neutral').length;
+                </div>`).join('');
+            document.getElementById('likeCount').textContent = annotations.filter(a=>a.sentiment==='like').length;
+            document.getElementById('dislikeCount').textContent = annotations.filter(a=>a.sentiment==='dislike').length;
+            document.getElementById('neutralCount').textContent = annotations.filter(a=>a.sentiment==='neutral').length;
             document.getElementById('totalCount').textContent = annotations.length;
         }
-        
+
         function highlightAnnotation(id) {
             document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
             const item = document.getElementById('item-' + id);
-            if (item) { item.classList.add('active'); item.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
-            const a = annotations.find(x => x.id === id);
-            if (a) {
-                const idx = annotations.indexOf(a);
-                const pins = document.querySelectorAll('.pin');
-                if (pins[idx]) {
-                    pins[idx].style.transform = 'rotate(-45deg) translate(-50%, -50%) scale(1.6)';
-                    setTimeout(() => { if (pins[idx]) pins[idx].style.transform = ''; }, 500);
-                }
-            }
+            if (item) { item.classList.add('active'); item.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+            const idx = annotations.findIndex(a => a.id === id);
+            const shapes = document.querySelectorAll('#pinsContainer > *');
+            if (shapes[idx]) { shapes[idx].style.filter = 'brightness(1.2) drop-shadow(0 0 8px rgba(234,88,12,0.5))'; setTimeout(()=>{ if(shapes[idx]) shapes[idx].style.filter=''; }, 600); }
         }
-        
-        function deleteAnnotation(id) {
-            annotations = annotations.filter(a => a.id !== id);
-            saveAnnotations();
-            renderPins();
-            renderSidebar();
-        }
-        
-        // ========== PERSISTENCE ==========
-        function saveAnnotations() {
-            localStorage.setItem('flame-group-annotations', JSON.stringify(annotations));
-        }
-        
-        function loadAnnotations() {
-            const saved = localStorage.getItem('flame-group-annotations');
-            if (saved) { try { annotations = JSON.parse(saved); } catch(e) { annotations = []; } }
-            renderPins();
-            renderSidebar();
-        }
-        
-        // ========== EXPORT ==========
+
+        function deleteAnnotation(id) { annotations = annotations.filter(a=>a.id!==id); saveAnnotations(); renderAll(); }
+        function saveAnnotations() { localStorage.setItem('flame-group-annotations', JSON.stringify(annotations)); }
+        function loadAnnotations() { const s = localStorage.getItem('flame-group-annotations'); if(s){try{annotations=JSON.parse(s);}catch(e){annotations=[];}} renderAll(); }
+
         function exportAnnotations() {
-            if (annotations.length === 0) { alert('No feedback yet.'); return; }
-            
-            const likes = annotations.filter(a => a.sentiment === 'like');
-            const dislikes = annotations.filter(a => a.sentiment === 'dislike');
-            const neutrals = annotations.filter(a => a.sentiment === 'neutral');
-            
-            let r = `🔥 THE FLAME GROUP — CLIENT FEEDBACK REPORT\n`;
-            r += `${'═'.repeat(50)}\n`;
-            r += `Generated: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n`;
-            r += `Website: ${SITE_URL}\n\n`;
-            r += `📊 SUMMARY\n${'─'.repeat(30)}\n`;
-            r += `👍 Likes: ${likes.length}\n👎 Dislikes: ${dislikes.length}\n🤔 Neutral: ${neutrals.length}\n📝 Total: ${annotations.length}\n\n`;
-            
-            if (dislikes.length > 0) {
-                r += `❌ NEED TO CHANGE\n${'─'.repeat(30)}\n`;
-                dislikes.forEach((a, i) => {
-                    r += `\n#${i + 1} — Position (${a.x}%, ${a.y}%)\n`;
-                    if (a.comment) r += `   "${a.comment}"\n`;
-                });
-                r += '\n';
-            }
-            if (likes.length > 0) {
-                r += `✅ APPROVED\n${'─'.repeat(30)}\n`;
-                likes.forEach((a, i) => {
-                    r += `\n#${i + 1} — Position (${a.x}%, ${a.y}%)\n`;
-                    if (a.comment) r += `   "${a.comment}"\n`;
-                });
-                r += '\n';
-            }
-            if (neutrals.length > 0) {
-                r += `🤔 QUESTIONS / NOTES\n${'─'.repeat(30)}\n`;
-                neutrals.forEach((a, i) => {
-                    r += `\n#${i + 1} — Position (${a.x}%, ${a.y}%)\n`;
-                    if (a.comment) r += `   "${a.comment}"\n`;
-                });
-            }
-            
-            const blob = new Blob([r], { type: 'text/plain' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `flame-group-feedback-${new Date().toISOString().split('T')[0]}.txt`;
-            link.click();
+            if (!annotations.length) { alert('No feedback yet.'); return; }
+            const likes=annotations.filter(a=>a.sentiment==='like'), dislikes=annotations.filter(a=>a.sentiment==='dislike'), neutrals=annotations.filter(a=>a.sentiment==='neutral');
+            let r = `🔥 THE FLAME GROUP — CLIENT FEEDBACK REPORT\n${'═'.repeat(50)}\nGenerated: ${new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}\nWebsite: ${SITE_URL}\n\n📊 SUMMARY\n${'─'.repeat(30)}\n👍 Likes: ${likes.length}\n👎 Dislikes: ${dislikes.length}\n🤔 Neutral: ${neutrals.length}\n📝 Total: ${annotations.length}\n\n`;
+            const pos = (a) => a.shape==='pin'?`Pin at (${a.x}%,${a.y}%)`:a.shape==='rect'?`Box from (${a.x1}%,${a.y1}%) to (${a.x2}%,${a.y2}%)`:`Circle at (${((a.x1+a.x2)/2).toFixed(1)}%,${((a.y1+a.y2)/2).toFixed(1)}%)`;
+            if(dislikes.length){r+=`❌ NEED TO CHANGE\n${'─'.repeat(30)}\n`;dislikes.forEach((a,i)=>{r+=`\n#${i+1} — ${pos(a)}\n`;if(a.comment)r+=`   "${a.comment}"\n`;});r+='\n';}
+            if(likes.length){r+=`✅ APPROVED\n${'─'.repeat(30)}\n`;likes.forEach((a,i)=>{r+=`\n#${i+1} — ${pos(a)}\n`;if(a.comment)r+=`   "${a.comment}"\n`;});r+='\n';}
+            if(neutrals.length){r+=`🤔 QUESTIONS / NOTES\n${'─'.repeat(30)}\n`;neutrals.forEach((a,i)=>{r+=`\n#${i+1} — ${pos(a)}\n`;if(a.comment)r+=`   "${a.comment}"\n`;});}
+            const blob=new Blob([r],{type:'text/plain'}), link=document.createElement('a'); link.href=URL.createObjectURL(blob); link.download=`flame-group-feedback-${new Date().toISOString().split('T')[0]}.txt`; link.click();
         }
-        
-        function clearAll() {
-            if (!confirm('Delete all feedback? This cannot be undone.')) return;
-            annotations = [];
-            saveAnnotations();
-            renderPins();
-            renderSidebar();
-        }
-        
-        function formatTime(iso) {
-            const diff = new Date() - new Date(iso);
-            if (diff < 60000) return 'now';
-            if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
-            if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
-            return new Date(iso).toLocaleDateString();
-        }
-        
-        function escapeHtml(str) {
-            const d = document.createElement('div');
-            d.textContent = str;
-            return d.innerHTML;
-        }
+
+        function clearAll() { if(!confirm('Delete all feedback?'))return; annotations=[]; saveAnnotations(); renderAll(); }
+        function formatTime(iso) { const d=new Date()-new Date(iso); if(d<60000)return 'now'; if(d<3600000)return Math.floor(d/60000)+'m ago'; if(d<86400000)return Math.floor(d/3600000)+'h ago'; return new Date(iso).toLocaleDateString(); }
+        function escapeHtml(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
     </script>
 </body>
 </html>
