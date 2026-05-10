@@ -1,15 +1,8 @@
 {
   "name": "firesafety-review",
   "version": "1.0.0",
-  "description": "Client annotation & feedback tool for fire safety website",
-  "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "db:create": "wrangler d1 create firesafety-annotations",
-    "db:init": "wrangler d1 execute firesafety-annotations --file=./worker/schema.sql",
-    "setup": "npm run db:create && npm run db:init"
-  },
-  "devDependencies": {
-    "wrangler": "^3.0.0"
+  "description": "Client annotation & feedback tool for The Flame Group",
+  "dependencies": {
+    "@netlify/blob": "^18.0.0"
   }
 }

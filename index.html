@@ -166,6 +166,7 @@
 
     <script>
         const SITE_URL = 'https://fire-safety.pages.dev/';
+        const API_BASE = '/api'; // Netlify Functions proxy
         let annotations = [], currentSentiment = null, pendingShape = null, isAnnotating = true, drawMode = 'pin', isDrawing = false, drawStart = null, drawPreview = null;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -358,9 +359,49 @@
             if (shapes[idx]) { shapes[idx].style.filter = 'brightness(1.2) drop-shadow(0 0 8px rgba(234,88,12,0.5))'; setTimeout(()=>{ if(shapes[idx]) shapes[idx].style.filter=''; }, 600); }
         }
 
-        function deleteAnnotation(id) { annotations = annotations.filter(a=>a.id!==id); saveAnnotations(); renderAll(); }
-        function saveAnnotations() { localStorage.setItem('flame-group-annotations', JSON.stringify(annotations)); }
-        function loadAnnotations() { const s = localStorage.getItem('flame-group-annotations'); if(s){try{annotations=JSON.parse(s);}catch(e){annotations=[];}} renderAll(); }
+        function deleteAnnotation(id) { 
+            annotations = annotations.filter(a=>a.id!==id); 
+            saveAnnotations(); 
+            renderAll(); 
+            // Also delete from API
+            fetch(`${API_BASE}/annotations/${id}`, { method: 'DELETE' }).catch(() => {});
+        }
+        
+        function saveAnnotations() {
+            localStorage.setItem('flame-group-annotations', JSON.stringify(annotations));
+            // Save latest annotation to server
+            const latest = annotations[annotations.length - 1];
+            if (latest && latest._synced !== true) {
+                fetch(`${API_BASE}/annotations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(latest)
+                }).then(r => r.json()).then(() => { latest._synced = true; }).catch(() => {});
+            }
+        }
+        
+        function loadAnnotations() {
+            // Try loading from API first
+            fetch(`${API_BASE}/annotations`)
+                .then(r => r.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        annotations = data;
+                        localStorage.setItem('flame-group-annotations', JSON.stringify(annotations));
+                    } else {
+                        // API empty, try localStorage
+                        const s = localStorage.getItem('flame-group-annotations');
+                        if (s) { try { annotations = JSON.parse(s); } catch(e) { annotations = []; } }
+                    }
+                    renderAll();
+                })
+                .catch(() => {
+                    // API unavailable, fall back to localStorage
+                    const s = localStorage.getItem('flame-group-annotations');
+                    if (s) { try { annotations = JSON.parse(s); } catch(e) { annotations = []; } }
+                    renderAll();
+                });
+        }
 
         function exportAnnotations() {
             if (!annotations.length) { alert('No feedback yet.'); return; }
